@@ -39,12 +39,17 @@ export default function Contact() {
 
         <div className="form-group reveal">
           <label>TRANSMISSION_DATA</label>
-          <div className="input-row">
+          <div className="input-row textarea-row">
             <textarea 
               placeholder="DESCRIBE_YOUR_PROJECT_VISION" 
               value={formData.message}
               onChange={(e) => updateForm('message', e.target.value)}
+              maxLength={300}
             />
+            {formData.message && (
+              <button className="clear-btn textarea-clear" onClick={() => updateForm('message', '')}>X</button>
+            )}
+            <div className="char-counter">{formData.message.length} / 300</div>
           </div>
         </div>
 

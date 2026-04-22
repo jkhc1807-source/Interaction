@@ -13,10 +13,10 @@ import Contact from './pages/Contact'
 gsap.registerPlugin(ScrollTrigger)
 
 const HERO_SLIDES = [
-  { line1: 'KINETIC', line2: 'STRUCTURE' },
-  { line1: 'CODED', line2: 'EMOTION' },
-  { line1: 'DIGITAL', line2: 'POETRY' },
-  { line1: 'FUTURE', line2: 'ARCHIVE' }
+  { line1: 'KINETIC', line2: 'STRUCTURE', colors: ['#00f3ff', '#0070ff', '#00c3ff'] }, // Cyber Blue
+  { line1: 'CODED', line2: 'EMOTION', colors: ['#ff007a', '#ff00ff', '#bd00ff'] },    // Neon Magenta
+  { line1: 'DIGITAL', line2: 'POETRY', colors: ['#e2ff00', '#a0ff00', '#00ffaa'] },   // Volt Green
+  { line1: 'FUTURE', line2: 'ARCHIVE', colors: ['#ffffff', '#cccccc', '#999999'] }    // Silver/White
 ]
 
 function AppContent() {
@@ -66,14 +66,17 @@ function AppContent() {
     const onMouseMove = (e: MouseEvent) => {
       rxTo.current?.(e.clientX); ryTo.current?.(e.clientY)
       const target = e.target as HTMLElement
-      const isInteractive = target.closest('button, a, input, textarea, .logo, .work-item, .archive-item')
-      const checkTextContent = (el: HTMLElement | null): boolean => {
-        if (!el || el === document.body) return false
-        const hasDirectText = Array.from(el.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent?.trim().length! > 0)
-        if (hasDirectText) return true
-        return checkTextContent(el.parentElement)
-      }
-      setIsHovered(!!isInteractive || checkTextContent(target))
+      
+      // 1. 명시적인 상호작용 요소 확인
+      const isInteractive = !!target.closest('button, a, input, textarea, .logo, .work-item, .archive-item, [role="button"]')
+      
+      // 2. 텍스트 포함 여부 확인 (더 공격적으로)
+      const hasText = target.innerText && target.innerText.trim().length > 0 && target.childNodes.length <= 3
+      
+      // 3. 텍스트 관련 태그 직접 확인
+      const isTextTag = !!target.closest('h1, h2, h3, h4, p, span, label, li')
+
+      setIsHovered(isInteractive || isTextTag || (hasText && target.tagName !== 'DIV'))
     }
     window.addEventListener('mousemove', onMouseMove)
 
@@ -82,32 +85,58 @@ function AppContent() {
 
   useEffect(() => {
     if (location.pathname !== '/') return
-    const chars = document.querySelectorAll('.hero-title .char')
-    if (chars.length === 0) return
+    
+    // 🎭 GSAP Context: 애니메이션 잔상 및 충돌 완벽 방지
+    let ctx = gsap.context(() => {
+      const chars = document.querySelectorAll('.hero-title .char')
+      if (chars.length === 0) return
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setTimeout(() => {
-          gsap.to(chars, {
-            x: -400, y: 100, scale: 0, rotation: -90, opacity: 0, filter: 'blur(30px)',
-            duration: 0.7, ease: 'power2.in', stagger: { each: 0.02, from: "start" },
-            onComplete: () => { setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length) }
-          })
-        }, 2500)
-      }
+      const tl = gsap.timeline()
+      
+      // 초기화
+      gsap.set(chars, { opacity: 0, x: 0, y: 0, scale: 1, rotation: 0, filter: 'blur(0px)' })
+
+      // 1. 입장 애니메이션
+      chars.forEach((char, i) => {
+        const type = i % 3
+        if (type === 0) tl.fromTo(char, { rotationY: 180, opacity: 0, z: -300 }, { rotationY: 0, opacity: 1, z: 0, duration: 1, ease: 'back.out(1.5)' }, i * 0.03)
+        else if (type === 1) tl.fromTo(char, { y: -400, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'bounce.out' }, i * 0.03)
+        else tl.fromTo(char, { scale: 4, opacity: 0, filter: 'blur(40px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.7, ease: 'power4.out' }, i * 0.03)
+      })
+
+      // 2. 대기 후 퇴장 애니메이션 (랜덤 분산 효과)
+      tl.to(chars, {
+        x: () => (Math.random() - 0.5) * 1500, // 좌우 랜덤
+        y: () => (Math.random() - 0.5) * 1000, // 상하 랜덤
+        scale: 0,
+        rotation: () => (Math.random() - 0.5) * 720, // 회전 랜덤
+        opacity: 0,
+        filter: 'blur(40px)',
+        duration: 0.8,
+        ease: 'power2.in',
+        stagger: { each: 0.02, from: "random" }, // 사라지는 순서도 랜덤
+        delay: 2.5,
+        onComplete: () => { 
+          setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length) 
+        }
+      })
     })
 
-    gsap.set(chars, { opacity: 0, x: 0, y: 0, scale: 1, rotation: 0, filter: 'blur(0px)' })
-    chars.forEach((char, i) => {
-      const type = i % 3
-      if (type === 0) tl.fromTo(char, { rotationY: 180, opacity: 0, z: -300 }, { rotationY: 0, opacity: 1, z: 0, duration: 1, ease: 'back.out(1.5)' }, i * 0.03)
-      else if (type === 1) tl.fromTo(char, { y: -400, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'bounce.out' }, i * 0.03)
-      else tl.fromTo(char, { scale: 4, opacity: 0, filter: 'blur(40px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.7, ease: 'power4.out' }, i * 0.03)
-    })
+    return () => ctx.revert() // 컴포넌트 언마운트나 슬라이드 변경 시 모든 애니메이션 즉시 중단
   }, [activeSlide, location.pathname])
 
-  const splitText = (text: string, className: string = "char") => text.split('').map((char, i) => (
-    <span key={i} className={className} style={{ display: 'inline-block' }}>{char === ' ' ? '\u00A0' : char}</span>
+  const splitText = (text: string, colors: string[] = ['#ffffff'], isOutline: boolean = false) => text.split('').map((char, i) => (
+    <span 
+      key={`${activeSlide}-${i}`} // 슬라이드 인덱스를 포함하여 요소 재사용 방지
+      className="char" 
+      style={{ 
+        display: 'inline-block',
+        color: isOutline ? 'transparent' : colors[i % colors.length],
+        WebkitTextStroke: isOutline ? `2.5px ${colors[i % colors.length]}` : 'none'
+      }}
+    >
+      {char === ' ' ? '\u00A0' : char}
+    </span>
   ))
 
   return (
@@ -147,8 +176,8 @@ function AppContent() {
               <section className="hero-section">
                 <div className="hero-title-container">
                   <h1 className="hero-title">
-                    <div className="line">{splitText(HERO_SLIDES[activeSlide].line1)}</div>
-                    <div className="line"><span>{splitText(HERO_SLIDES[activeSlide].line2)}</span></div>
+                    <div className="line">{splitText(HERO_SLIDES[activeSlide].line1, HERO_SLIDES[activeSlide].colors)}</div>
+                    <div className="line"><span>{splitText(HERO_SLIDES[activeSlide].line2, HERO_SLIDES[activeSlide].colors, true)}</span></div>
                   </h1>
                 </div>
                 <div className="hero-footer">

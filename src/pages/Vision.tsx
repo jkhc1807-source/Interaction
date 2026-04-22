@@ -9,17 +9,27 @@ export default function Vision() {
     const lines = document.querySelectorAll('.line-span')
     lines.forEach((line) => {
       gsap.fromTo(line, 
-        { opacity: 0.1, y: 20 },
+        { opacity: 0.1 },
         { 
-          opacity: 1, y: 0,
+          opacity: 1,
           scrollTrigger: {
             trigger: line,
-            start: 'top 85%',
-            end: 'top 50%',
-            scrub: true
+            start: 'top 95%',   // 더 아래쪽에서부터 서서히 밝아짐
+            end: 'top 55%',     // 중앙 조금 아래에서 최대 밝기
+            scrub: 1            // 1초 정도 지연을 주어 부드럽게 추적
           }
         }
       )
+
+      gsap.to(line, {
+        opacity: 0.1,
+        scrollTrigger: {
+          trigger: line,
+          start: 'top 45%',     // 중앙을 지나자마자 아주 천천히 어두워짐
+          end: 'top 5%',       // 화면 최상단에 닿기 직전까지 변화
+          scrub: 1
+        }
+      })
     })
   }, [])
 
