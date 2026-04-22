@@ -7,6 +7,13 @@
   --font-mono: 'JetBrains Mono', monospace;
   --header-height: 80px;
   --side-padding: 40px;
+
+  /* 📏 Z-Index System */
+  --z-noise: 10000;
+  --z-cursor: 11000;
+  --z-menu: 5000;
+  --z-header: 2000;
+  --z-loader: 15000;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -23,7 +30,7 @@ body {
   background-color: var(--bg);
   color: var(--fg);
   font-family: var(--font-display);
-  overflow-x: hidden;
+  overflow: hidden; /* Lenis가 제어하도록 고정 */
   line-height: 1.1;
 }
 

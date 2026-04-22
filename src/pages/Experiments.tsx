@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 
 const ARCHIVE_DATA = [
@@ -9,24 +9,62 @@ const ARCHIVE_DATA = [
 ]
 
 export default function Experiments({ activeExp, setActiveId, splitText }: any) {
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [hoveredIdx, setHoveredId] = useState<number | null>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    gsap.fromTo('.work-item', 
-      { x: 100, opacity: 0 }, 
-      { x: 0, opacity: 1, duration: 1, stagger: 0.1, ease: 'power4.out' }
-    )
+    let ctx = gsap.context(() => {
+      gsap.fromTo('.work-item', 
+        { x: 100, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 1, stagger: 0.1, ease: 'power4.out', scrollTrigger: { trigger: '.works-list', start: 'top 80%' } }
+      )
+    })
+    return () => ctx.revert()
   }, [])
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (previewRef.current && hoveredIdx !== null) {
+        gsap.to(previewRef.current, {
+          x: e.clientX + 20,
+          y: e.clientY + 20,
+          duration: 0.6,
+          ease: 'power3.out'
+        })
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [hoveredIdx])
 
   return (
     <section id="experiments" className="list-section">
       <div className="section-label reveal">DATABASE_INDEX / EXPERIMENTS</div>
-      <div className="works-list" ref={scrollRef}>
+      
+      {/* 🖼️ Floating Preview Media */}
+      <div 
+        ref={previewRef} 
+        className={`floating-preview ${hoveredIdx !== null ? 'visible' : ''}`}
+        style={{
+          position: 'fixed', width: '300px', height: '200px', 
+          background: 'var(--fg-dim)', pointerEvents: 'none', zIndex: 1000,
+          overflow: 'hidden', opacity: 0, transform: 'scale(0.8)',
+          transition: 'opacity 0.4s, transform 0.4s'
+        }}
+      >
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 900, fontSize: '10px' }}>
+          [ PREVIEW_CONTENT_LOADED ]
+        </div>
+      </div>
+
+      <div className="works-list">
         {ARCHIVE_DATA.map((item, i) => (
           <div 
             key={i} 
             className={`work-item ${activeExp === i ? 'active' : ''}`}
             onClick={() => setActiveId(activeExp === i ? null : i)}
+            onMouseEnter={() => setHoveredId(i)}
+            onMouseLeave={() => setHoveredId(null)}
           >
             <div className="work-header">
               <span className={`work-id ${activeExp === i ? 'on' : ''}`}>{item.id}</span>
@@ -40,7 +78,7 @@ export default function Experiments({ activeExp, setActiveId, splitText }: any) 
                 <div className="spec-line" style={{ marginBottom: '20px', color: 'var(--accent)', fontSize: '12px' }}>
                   <span>[ SYSTEM_PROTOCOL ]</span> {item.spec}
                 </div>
-                {splitText(item.desc, "desc-char")}
+                {splitText(item.desc, ["#ffffff"], false)}
               </div>
             </div>
           </div>
