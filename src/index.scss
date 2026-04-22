@@ -1,0 +1,75 @@
+:root {
+  --bg: #050505;
+  --fg: #ffffff;
+  --fg-dim: #444444;
+  --accent: #e2ff00;
+  --font-display: 'Inter Tight', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --header-height: 80px;
+  --side-padding: 40px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  cursor: none !important;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  overflow-x: hidden;
+  line-height: 1.1;
+}
+
+/* 🎥 FIXED: Local Data-URI Noise */
+body::before {
+  content: "";
+  position: fixed;
+  top: -100%; left: -100%; width: 300%; height: 300%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05; pointer-events: none; z-index: 10000;
+  animation: grain-shift 0.4s steps(4) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-5%, -5%); }
+  50% { transform: translate(-10%, 5%); }
+  75% { transform: translate(5%, -10%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* 📏 Global Rules */
+a, button {
+  text-decoration: none !important;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: none !important;
+}
+
+/* 🖱️ Global Difference Ring Cursor - NO DOT */
+.cursor-ring {
+  position: fixed; top: 0; left: 0; width: 30px; height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%; pointer-events: none; z-index: 11500;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference; 
+  transition: width 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+              height 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+              background-color 0.4s ease;
+
+  &.active {
+    width: 100px; height: 100px;
+    background-color: white !important;
+    border: none;
+  }
+  @media (hover: none) and (pointer: coarse) { display: none; }
+}
