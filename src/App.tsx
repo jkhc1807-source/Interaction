@@ -35,6 +35,8 @@ function AppContent() {
   const [activeSection, setActiveSection] = useState('home')
   const [activeExp, setActiveId] = useState<number | null>(null)
   const [isHovered, setIsHovered] = useState(false)
+  const [cursorType, setCursorType] = useState<'default' | 'view' | 'type'>('default')
+  const [isCursorVisible, setIsCursorVisible] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const location = useLocation()
@@ -89,17 +91,31 @@ function AppContent() {
     })
 
     const onMouseMove = (e: MouseEvent) => {
+      if (!isCursorVisible) setIsCursorVisible(true)
       rxTo.current?.(e.clientX); ryTo.current?.(e.clientY)
+      
       const target = e.target as HTMLElement
-      const isInteractive = !!target.closest('button, a, input, textarea, .logo, .work-item, .archive-item, [role="button"]')
-      const hasText = target.innerText && target.innerText.trim().length > 0 && target.childNodes.length <= 3
-      const isTextTag = !!target.closest('h1, h2, h3, h4, p, span, label, li')
-      setIsHovered(isInteractive || isTextTag || (hasText && target.tagName !== 'DIV'))
+      if (!target) return
+
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'
+      const isWorkItem = !!target.closest('.work-item')
+      const isInteractive = !!target.closest('button, a, [role="button"]') || isInput
+      const isText = (target.tagName === 'SPAN' && target.innerText.trim() !== '') || 
+                     target.classList.contains('char') || 
+                     target.classList.contains('line-span')
+
+      const isSpecial = target.classList.contains('logo') || target.classList.contains('clear-btn')
+
+      setIsHovered(isInteractive || isText || isSpecial)
+      
+      if (isInput) setCursorType('type')
+      else if (isWorkItem && !target.closest('button')) setCursorType('view')
+      else setCursorType('default')
     }
     window.addEventListener('mousemove', onMouseMove)
 
     return () => { ctx.revert(); clearInterval(timer); lenis.destroy(); window.removeEventListener('mousemove', onMouseMove) }
-  }, [isMenuOpen])
+  }, [isMenuOpen, isCursorVisible])
 
   useEffect(() => {
     if (!isLoading) ScrollTrigger.refresh()
@@ -152,9 +168,8 @@ function AppContent() {
   return (
     <>
       {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
-      <div ref={ringRef} className={`cursor-ring ${isHovered ? 'active' : ''}`} />
-
-      {/* 🧭 GLOBAL HEADER: OUTSIDE ANY CONTAINER */}
+      
+      {/* 🧭 GLOBAL HEADER */}
       <header className="header">
         <div className="nav-container">
           <div className="nav-left"><Link to="/" className="logo" onMouseMove={(e) => handleMagnetic(e, 0.5)} onMouseOut={resetMagnetic}>TYPO.ARCHIVE</Link></div>
@@ -170,11 +185,10 @@ function AppContent() {
         </div>
       </header>
 
-      {/* 📱 MOBILE MENU: GLOBAL LAYER */}
       <div className={`mobile-menu ${isMenuOpen ? 'visible' : ''}`}>
         <div className="menu-header"><button className="close-btn" onClick={() => setIsMenuOpen(false)}>[ CLOSE ]</button></div>
         <nav className="menu-links">
-          <div className="menu-label">NAVIGATE_TO</div>
+          <div className="menu-label"><span>NAVIGATE_TO</span></div>
           {NAV_ITEMS.map((item) => (
             <a key={item.id} href={`#${item.id}`} className={activeSection === item.id ? 'active' : ''} onClick={(e) => { e.preventDefault(); scrollToSection(item.id); setIsMenuOpen(false); }}>
               <span>{item.num}</span> {item.label}
@@ -183,7 +197,6 @@ function AppContent() {
         </nav>
       </div>
 
-      {/* 📍 MOBILE INDICATOR: GLOBAL LAYER */}
       <nav className="mobile-indicator">
         {NAV_ITEMS.map((item) => (
           <div key={item.id} className={`indicator-item ${activeSection === item.id ? 'active' : ''}`} onClick={() => scrollToSection(item.id)}>
@@ -192,7 +205,6 @@ function AppContent() {
         ))}
       </nav>
 
-      {/* 🧪 MAIN SCROLLABLE CONTENT */}
       <div className={`main-archive ${isMenuOpen ? 'menu-open' : ''}`}>
         <main className="content-wrapper">
           <Routes>
@@ -206,8 +218,8 @@ function AppContent() {
                     </h1>
                   </div>
                   <div className="hero-footer">
-                    <div className="slide-index">INDEX_0{activeSlide + 1} / 04</div>
-                    <div className="hero-meta">DYNAMIC_ASSEMBLY / EST. 2026</div>
+                    <div className="slide-index"><span>INDEX_0{activeSlide + 1} / 04</span></div>
+                    <div className="hero-meta"><span>DYNAMIC_ASSEMBLY / EST. 2026</span></div>
                   </div>
                 </section>
                 <Vision />
@@ -220,6 +232,15 @@ function AppContent() {
         <footer className="footer">
           <div className="marquee-container"><div className="marquee-content">{Array(10).fill('STAY ELASTIC • CODING THE UNSEEN • ').map((text, i) => (<span key={i}>{text}</span>))}</div></div>
         </footer>
+      </div>
+
+      {/* 🖱️ CURSOR RING: 최하단에 배치하여 모든 레이어 위에 오도록 보장 */}
+      <div ref={ringRef} className={`cursor-ring ${isCursorVisible ? 'visible' : ''} ${isHovered ? 'active' : ''} cursor-${cursorType}`}>
+        {cursorType !== 'default' && (
+          <span className="cursor-label">
+            {cursorType === 'view' ? 'VIEW' : 'TYPE'}
+          </span>
+        )}
       </div>
     </>
   )

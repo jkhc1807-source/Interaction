@@ -39,7 +39,7 @@ export default function Experiments({ activeExp, setActiveId, splitText }: any) 
 
   return (
     <section id="experiments" className="list-section">
-      <div className="section-label reveal">DATABASE_INDEX / EXPERIMENTS</div>
+      <div className="section-label reveal"><span>DATABASE_INDEX / EXPERIMENTS</span></div>
       
       {/* 🖼️ Floating Preview Media */}
       <div 
@@ -53,7 +53,7 @@ export default function Experiments({ activeExp, setActiveId, splitText }: any) 
         }}
       >
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 900, fontSize: '10px' }}>
-          [ PREVIEW_CONTENT_LOADED ]
+          <span>[ PREVIEW_CONTENT_LOADED ]</span>
         </div>
       </div>
 
@@ -68,7 +68,7 @@ export default function Experiments({ activeExp, setActiveId, splitText }: any) 
           >
             <div className="work-header">
               <span className={`work-id ${activeExp === i ? 'on' : ''}`}>{item.id}</span>
-              <h2 className="work-title">{item.title}</h2>
+              <h2 className="work-title"><span>{item.title}</span></h2>
               <span className={`toggle-indicator ${activeExp === i ? 'on' : ''}`}>
                 {activeExp === i ? '[ - ]' : '[ + ]'}
               </span>
@@ -76,7 +76,7 @@ export default function Experiments({ activeExp, setActiveId, splitText }: any) 
             <div className="work-reveal-content">
               <div className="work-desc">
                 <div className="spec-line" style={{ marginBottom: '20px', color: 'var(--accent)', fontSize: '12px' }}>
-                  <span>[ SYSTEM_PROTOCOL ]</span> {item.spec}
+                  <span>[ SYSTEM_PROTOCOL ]</span> <span>{item.spec}</span>
                 </div>
                 {splitText(item.desc, ["#ffffff"], false)}
               </div>

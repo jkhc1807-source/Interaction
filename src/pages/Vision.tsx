@@ -41,7 +41,7 @@ export default function Vision() {
 
   return (
     <section id="vision" className="narrative-section">
-      <div className="section-label reveal">THE_MANIFESTO / BEYOND_PIXELS</div>
+      <div className="section-label reveal"><span>THE_MANIFESTO / BEYOND_PIXELS</span></div>
       <div className="narrative-text">
         {text.split(' ').map((word, i) => (
           <span key={i} className="line-span" style={{ color: 'var(--fg)', marginRight: '15px' }}>{word} </span>
