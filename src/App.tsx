@@ -91,7 +91,12 @@ function AppContent() {
     })
 
     const onMouseMove = (e: MouseEvent) => {
-      if (!isCursorVisible) setIsCursorVisible(true)
+      // 🚀 창에 처음 들어오거나 가려졌다가 나타날 때 애니메이션 없이 즉시 위치 고정
+      if (!isCursorVisible) {
+        gsap.set(ringRef.current, { x: e.clientX, y: e.clientY })
+        setIsCursorVisible(true)
+      }
+      
       rxTo.current?.(e.clientX); ryTo.current?.(e.clientY)
       
       const target = e.target as HTMLElement
@@ -112,9 +117,22 @@ function AppContent() {
       else if (isWorkItem && !target.closest('button')) setCursorType('view')
       else setCursorType('default')
     }
-    window.addEventListener('mousemove', onMouseMove)
 
-    return () => { ctx.revert(); clearInterval(timer); lenis.destroy(); window.removeEventListener('mousemove', onMouseMove) }
+    const onMouseLeave = () => setIsCursorVisible(false)
+    const onMouseEnter = () => setIsCursorVisible(true)
+
+    window.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseleave', onMouseLeave)
+    document.addEventListener('mouseenter', onMouseEnter)
+
+    return () => { 
+      ctx.revert(); 
+      clearInterval(timer); 
+      lenis.destroy(); 
+      window.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseleave', onMouseLeave)
+      document.removeEventListener('mouseenter', onMouseEnter)
+    }
   }, [isMenuOpen, isCursorVisible])
 
   useEffect(() => {
